@@ -112,6 +112,18 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0xf18022b25a767a6c2bca01276320ad3d2e6fffba28239df970f511a0b9e7d922"); //160578
 
+        /* Start DigiShield params */
+        consensus.nAveragingInterval = 10; // 10 blocks
+        consensus.multiAlgoTargetSpacingV4 = consensus.nPowTargetSpacing; // 30 seconds
+        consensus.nMaxAdjustDownV4 = 16;
+        consensus.nMaxAdjustUpV4 = 8;
+        consensus.nAveragingTargetTimespanV4 = consensus.nAveragingInterval * consensus.multiAlgoTargetSpacingV4; // 10 * 30
+        consensus.nMinActualTimespanV4 = consensus.nAveragingTargetTimespanV4 * (100 - consensus.nMaxAdjustUpV4) / 100;
+        consensus.nMaxActualTimespanV4 = consensus.nAveragingTargetTimespanV4 * (100 + consensus.nMaxAdjustDownV4) / 100;
+        consensus.nLocalTargetAdjustment = 4; //target adjustment per algo
+        /* End DigiShield params */
+        consensus.nDigiSheildHFHeight = 1385480; //Digishield kicks in at this block for Mainnet
+
         /**
          * The message start string is designed to be unlikely to occur in normal data.
          * The characters are rarely used upper ASCII, not valid as UTF-8, and produce
@@ -227,6 +239,18 @@ public:
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x00"); //343833
 
+        /* Start DigiShield params */
+        consensus.nAveragingInterval = 10; // 10 blocks
+        consensus.multiAlgoTargetSpacingV4 = consensus.nPowTargetSpacing; // 30 seconds
+        consensus.nMaxAdjustDownV4 = 16;
+        consensus.nMaxAdjustUpV4 = 8;
+        consensus.nAveragingTargetTimespanV4 = consensus.nAveragingInterval * consensus.multiAlgoTargetSpacingV4; // 10 * 30
+        consensus.nMinActualTimespanV4 = consensus.nAveragingTargetTimespanV4 * (100 - consensus.nMaxAdjustUpV4) / 100;
+        consensus.nMaxActualTimespanV4 = consensus.nAveragingTargetTimespanV4 * (100 + consensus.nMaxAdjustDownV4) / 100;
+        consensus.nLocalTargetAdjustment = 4; //target adjustment per algo
+        /* End DigiShield params */
+        consensus.nDigiSheildHFHeight = 600; //Digishield kicks in at this block for Testnet
+
 
         pchMessageStart[0] = 0xda;
         pchMessageStart[1] = 0xe7;
@@ -307,6 +331,18 @@ public:
 
         // By default assume that the signatures in ancestors of this block are valid.
         consensus.defaultAssumeValid = uint256S("0x00");
+
+        /* Start DigiShield params */
+        consensus.nAveragingInterval = 10; // 10 blocks
+        consensus.multiAlgoTargetSpacingV4 = consensus.nPowTargetSpacing; // 30 seconds
+        consensus.nMaxAdjustDownV4 = 16;
+        consensus.nMaxAdjustUpV4 = 8;
+        consensus.nAveragingTargetTimespanV4 = consensus.nAveragingInterval * consensus.multiAlgoTargetSpacingV4; // 10 * 30
+        consensus.nMinActualTimespanV4 = consensus.nAveragingTargetTimespanV4 * (100 - consensus.nMaxAdjustUpV4) / 100;
+        consensus.nMaxActualTimespanV4 = consensus.nAveragingTargetTimespanV4 * (100 + consensus.nMaxAdjustDownV4) / 100;
+        consensus.nLocalTargetAdjustment = 4; //target adjustment per algo
+        /* End DigiShield params */
+        consensus.nDigiSheildHFHeight = 600; //Digishield kicks in at this block for Regtest
 
         pchMessageStart[0] = 0xad;
         pchMessageStart[1] = 0xe2;
