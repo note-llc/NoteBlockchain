@@ -10,11 +10,11 @@ SetCompressor /SOLID lzma
 !define URL https://www.notebc.com/
 
 # MUI Symbol Definitions
-!define MUI_ICON "/home/poolop/ntbcfix/NoteBlockchain/share/pixmaps/bitcoin.ico"
-!define MUI_WELCOMEFINISHPAGE_BITMAP "/home/poolop/ntbcfix/NoteBlockchain/share/pixmaps/nsis-wizard.bmp"
+!define MUI_ICON "/home/poolop/try3/NoteBlockchain/share/pixmaps/bitcoin.ico"
+!define MUI_WELCOMEFINISHPAGE_BITMAP "/home/poolop/try3/NoteBlockchain/share/pixmaps/nsis-wizard.bmp"
 !define MUI_HEADERIMAGE
 !define MUI_HEADERIMAGE_RIGHT
-!define MUI_HEADERIMAGE_BITMAP "/home/poolop/ntbcfix/NoteBlockchain/share/pixmaps/nsis-header.bmp"
+!define MUI_HEADERIMAGE_BITMAP "/home/poolop/try3/NoteBlockchain/share/pixmaps/nsis-header.bmp"
 !define MUI_FINISHPAGE_NOAUTOCLOSE
 !define MUI_STARTMENUPAGE_REGISTRY_ROOT HKLM
 !define MUI_STARTMENUPAGE_REGISTRY_KEY ${REGKEY}
@@ -23,7 +23,7 @@ SetCompressor /SOLID lzma
 !define MUI_FINISHPAGE_RUN "$WINDIR\explorer.exe"
 !define MUI_FINISHPAGE_RUN_PARAMETERS $INSTDIR\notecoin-qt
 !define MUI_UNICON "${NSISDIR}\Contrib\Graphics\Icons\modern-uninstall.ico"
-!define MUI_UNWELCOMEFINISHPAGE_BITMAP "/home/poolop/ntbcfix/NoteBlockchain/share/pixmaps/nsis-wizard.bmp"
+!define MUI_UNWELCOMEFINISHPAGE_BITMAP "/home/poolop/try3/NoteBlockchain/share/pixmaps/nsis-wizard.bmp"
 !define MUI_UNFINISHPAGE_NOAUTOCLOSE
 
 # Included files
@@ -49,7 +49,7 @@ Var StartMenuGroup
 !insertmacro MUI_LANGUAGE English
 
 # Installer attributes
-OutFile /home/poolop/ntbcfix/NoteBlockchain/notebc-${VERSION}-win-setup.exe
+OutFile /home/poolop/try3/NoteBlockchain/notebc-${VERSION}-win-setup.exe
 !if "" == "64"
 InstallDir $PROGRAMFILES64\NoteCoin
 !else
@@ -74,14 +74,14 @@ ShowUninstDetails show
 Section -Main SEC0000
     SetOutPath $INSTDIR
     SetOverwrite on
-    File /home/poolop/ntbcfix/NoteBlockchain/release/notecoin-qt
-    File /oname=COPYING.txt /home/poolop/ntbcfix/NoteBlockchain/COPYING
-    File /oname=readme.txt /home/poolop/ntbcfix/NoteBlockchain/doc/README_windows.txt
+    File /home/poolop/try3/NoteBlockchain/release/notecoin-qt
+    File /oname=COPYING.txt /home/poolop/try3/NoteBlockchain/COPYING
+    File /oname=readme.txt /home/poolop/try3/NoteBlockchain/doc/README_windows.txt
     SetOutPath $INSTDIR\daemon
-    File /home/poolop/ntbcfix/NoteBlockchain/release/notecoind
-    File /home/poolop/ntbcfix/NoteBlockchain/release/notecoin-cli
+    File /home/poolop/try3/NoteBlockchain/release/notecoind
+    File /home/poolop/try3/NoteBlockchain/release/notecoin-cli
     SetOutPath $INSTDIR\doc
-    File /r /home/poolop/ntbcfix/NoteBlockchain/doc\*.*
+    File /r /home/poolop/try3/NoteBlockchain/doc\*.*
     SetOutPath $INSTDIR
     WriteRegStr HKCU "${REGKEY}\Components" Main 1
 SectionEnd

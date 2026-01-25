@@ -4,7 +4,7 @@
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
 #include <validation.h>
-
+#include <boost/bind.hpp>
 #include <arith_uint256.h>
 #include <chain.h>
 #include <chainparams.h>

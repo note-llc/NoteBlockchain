@@ -324,10 +324,10 @@ RES_ICONS = \
   qt/res/icons/verify.png
 
 RES_FONTS = \
-  qt/res/fonts/TeXGyreAdventor-Regular.ttf \
-  qt/res/fonts/TeXGyreAdventor-Italic.ttf \
-  qt/res/fonts/TeXGyreAdventor-Bold.ttf \
-  qt/res/fonts/TeXGyreAdventor-BoldItalic.ttf
+  qt/res/fonts/Akrobat-Regular.ttf \
+  qt/res/fonts/Akrobat-Light.ttf \
+  qt/res/fonts/Akrobat-Bold.ttf \
+  qt/res/fonts/Akrobat-SemiBold.ttf
 
 BITCOIN_QT_BASE_CPP = \
   qt/bantablemodel.cpp \

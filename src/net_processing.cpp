@@ -29,7 +29,7 @@
 #include <util.h>
 #include <utilmoneystr.h>
 #include <utilstrencodings.h>
-
+#include <array>
 #include <memory>
 
 #if defined(NDEBUG)

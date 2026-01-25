@@ -169,14 +169,14 @@ BitcoinGUI::BitcoinGUI(const PlatformStyle *_platformStyle, const NetworkStyle *
     }
 
     // NoteBC: load fallback font in case Comic Sans is not availble on the system
-    QFontDatabase::addApplicationFont(":fonts/TeXGyreAdventor-Regular");
-    QFontDatabase::addApplicationFont(":fonts/TeXGyreAdventor-BoldItalic");
-    QFontDatabase::addApplicationFont(":fonts/TeXGyreAdventor-Bold");
-    QFontDatabase::addApplicationFont(":fonts/TeXGyreAdventor-Italic");
-    QFont::insertSubstitution("TeXGyreAdventor Regular", "TeXGyreAdventor");
+    QFontDatabase::addApplicationFont(":fonts/Akrobat-Regular");
+    QFontDatabase::addApplicationFont(":fonts/Akrobat-Semibold");
+    QFontDatabase::addApplicationFont(":fonts/Akrobat-Light");
+    QFontDatabase::addApplicationFont(":fonts/Akrobat-Bold");
+    QFont::insertSubstitution("Akrobat Regular", "Akrobat");
 
-    // NoteBC: Specify TeXGyreAdventor as default font.
-    QFont newFont("TeXGyreAdventor", 10);
+    // NoteBC: Specify Akrobat as default font.
+    QFont newFont("Akrobat", 11);
 
     // Dogecoin: Set new application font
     QApplication::setFont(newFont);

@@ -3138,10 +3138,10 @@ EXTRA_DIST = $(CTAES_DIST)
 @ENABLE_QT_TRUE@  qt/res/icons/verify.png
 
 @ENABLE_QT_TRUE@RES_FONTS = \
-@ENABLE_QT_TRUE@  qt/res/fonts/TeXGyreAdventor-Regular.ttf \
-@ENABLE_QT_TRUE@  qt/res/fonts/TeXGyreAdventor-Italic.ttf \
-@ENABLE_QT_TRUE@  qt/res/fonts/TeXGyreAdventor-Bold.ttf \
-@ENABLE_QT_TRUE@  qt/res/fonts/TeXGyreAdventor-BoldItalic.ttf
+@ENABLE_QT_TRUE@  qt/res/fonts/Akrobat-Regular.ttf \
+@ENABLE_QT_TRUE@  qt/res/fonts/Akrobat-Light.ttf \
+@ENABLE_QT_TRUE@  qt/res/fonts/Akrobat-Bold.ttf \
+@ENABLE_QT_TRUE@  qt/res/fonts/Akrobat-SemiBold.ttf
 
 @ENABLE_QT_TRUE@BITCOIN_QT_BASE_CPP = \
 @ENABLE_QT_TRUE@  qt/bantablemodel.cpp \

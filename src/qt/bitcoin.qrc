@@ -94,9 +94,9 @@
         <file alias="spinner-035">res/movies/spinner-035.png</file>
     </qresource>
     <qresource prefix="/fonts" >
-        <file alias="TeXGyreAdventor-Regular">res/fonts/TeXGyreAdventor-Regular.ttf</file>
-        <file alias="TeXGyreAdventor-BoldItalic">res/fonts/TeXGyreAdventor-BoldItalic.ttf</file>
-        <file alias="TeXGyreAdventor-Bold">res/fonts/TeXGyreAdventor-Bold.ttf</file>
-        <file alias="TeXGyreAdventor-Italic">res/fonts/TeXGyreAdventor-Italic.ttf</file>
+        <file alias="Akrobat-Regular">res/fonts/Akrobat-Regular.ttf</file>
+        <file alias="Akrobat-Light">res/fonts/Akrobat-Light.ttf</file>
+        <file alias="Akrobat-Bold">res/fonts/Akrobat-Bold.ttf</file>
+        <file alias="Akrobat-Semibold">res/fonts/Akrobat-SemiBold.ttf</file>
     </qresource>
 </RCC>

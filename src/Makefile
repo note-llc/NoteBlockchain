@@ -1948,14 +1948,14 @@ am__relativize = \
     dir1=`echo "$$dir1" | sed -e "$$sed_rest"`; \
   done; \
   reldir="$$dir2"
-ACLOCAL = ${SHELL} '/home/poolop/ntbcfix/NoteBlockchain/build-aux/missing' aclocal-1.16
+ACLOCAL = ${SHELL} '/home/poolop/try3/NoteBlockchain/build-aux/missing' aclocal-1.16
 AMTAR = $${TAR-tar}
 AM_DEFAULT_VERBOSITY = 0
 AR = /usr/bin/ar
 ARFLAGS = cr
-AUTOCONF = ${SHELL} '/home/poolop/ntbcfix/NoteBlockchain/build-aux/missing' autoconf
-AUTOHEADER = ${SHELL} '/home/poolop/ntbcfix/NoteBlockchain/build-aux/missing' autoheader
-AUTOMAKE = ${SHELL} '/home/poolop/ntbcfix/NoteBlockchain/build-aux/missing' automake-1.16
+AUTOCONF = ${SHELL} '/home/poolop/try3/NoteBlockchain/build-aux/missing' autoconf
+AUTOHEADER = ${SHELL} '/home/poolop/try3/NoteBlockchain/build-aux/missing' autoheader
+AUTOMAKE = ${SHELL} '/home/poolop/try3/NoteBlockchain/build-aux/missing' automake-1.16
 AWK = gawk
 BDB_CFLAGS = 
 BDB_CPPFLAGS = 
@@ -2054,7 +2054,7 @@ LTLIBOBJS =
 LT_SYS_LIBRARY_PATH = 
 LUPDATE = /usr/lib/x86_64-linux-gnu/qt5/bin/lupdate
 MAINT = 
-MAKEINFO = ${SHELL} '/home/poolop/ntbcfix/NoteBlockchain/build-aux/missing' makeinfo
+MAKEINFO = ${SHELL} '/home/poolop/try3/NoteBlockchain/build-aux/missing' makeinfo
 MAKENSIS = 
 MANIFEST_TOOL = :
 MINIUPNPC_CPPFLAGS = 
@@ -2160,10 +2160,10 @@ X11XCB_LIBS =
 XGETTEXT = /usr/bin/xgettext
 ZMQ_CFLAGS = -isystem /usr/include/mit-krb5 -I/usr/include/pgm-5.3 -I/usr/include/libxml2 -I/usr/include/x86_64-linux-gnu 
 ZMQ_LIBS = -lzmq 
-abs_builddir = /home/poolop/ntbcfix/NoteBlockchain/src
-abs_srcdir = /home/poolop/ntbcfix/NoteBlockchain/src
-abs_top_builddir = /home/poolop/ntbcfix/NoteBlockchain
-abs_top_srcdir = /home/poolop/ntbcfix/NoteBlockchain
+abs_builddir = /home/poolop/try3/NoteBlockchain/src
+abs_srcdir = /home/poolop/try3/NoteBlockchain/src
+abs_top_builddir = /home/poolop/try3/NoteBlockchain
+abs_top_srcdir = /home/poolop/try3/NoteBlockchain
 ac_ct_AR = ar
 ac_ct_CC = gcc
 ac_ct_CXX = g++
@@ -2195,7 +2195,7 @@ host_vendor = pc
 htmldir = ${docdir}
 includedir = ${prefix}/include
 infodir = ${datarootdir}/info
-install_sh = ${SHELL} /home/poolop/ntbcfix/NoteBlockchain/build-aux/install-sh
+install_sh = ${SHELL} /home/poolop/try3/NoteBlockchain/build-aux/install-sh
 libdir = ${exec_prefix}/lib
 libexecdir = ${exec_prefix}/libexec
 localedir = ${datarootdir}/locale
@@ -3138,10 +3138,10 @@ RES_ICONS = \
   qt/res/icons/verify.png
 
 RES_FONTS = \
-  qt/res/fonts/TeXGyreAdventor-Regular.ttf \
-  qt/res/fonts/TeXGyreAdventor-Italic.ttf \
-  qt/res/fonts/TeXGyreAdventor-Bold.ttf \
-  qt/res/fonts/TeXGyreAdventor-BoldItalic.ttf
+  qt/res/fonts/Akrobat-Regular.ttf \
+  qt/res/fonts/Akrobat-Light.ttf \
+  qt/res/fonts/Akrobat-Bold.ttf \
+  qt/res/fonts/Akrobat-SemiBold.ttf
 
 BITCOIN_QT_BASE_CPP = \
   qt/bantablemodel.cpp \

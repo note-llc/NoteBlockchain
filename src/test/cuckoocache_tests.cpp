@@ -7,7 +7,7 @@
 #include <test/test_bitcoin.h>
 #include <random.h>
 #include <thread>
-
+#include <deque>
 /** Test Suite for CuckooCache
  *
  *  1) All tests should have a deterministic result (using insecure rand
