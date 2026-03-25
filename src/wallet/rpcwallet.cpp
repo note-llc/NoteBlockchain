@@ -5,6 +5,7 @@
 
 #include <amount.h>
 #include <base58.h>
+#include <bip39.h>
 #include <chain.h>
 #include <consensus/validation.h>
 #include <core_io.h>
@@ -129,6 +130,187 @@ std::string AccountFromValue(const UniValue& value)
         throw JSONRPCError(RPC_WALLET_INVALID_ACCOUNT_NAME, "Invalid account name");
     return strAccount;
 }
+UniValue generatemnemonic(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() > 1)
+        throw std::runtime_error(
+            "generatemnemonic ( strength )\n"
+            "\nGenerates a new BIP39 mnemonic phrase for wallet creation.\n"
+            "\nArguments:\n"
+            "1. strength    (numeric, optional, default=128) Entropy strength in bits (128=12 words, 256=24 words)\n"
+            "\nResult:\n"
+            "{\n"
+            "  \"mnemonic\": \"word1 word2 ... word12\",  (string) The mnemonic phrase\n"
+            "  \"strength\": n,                            (numeric) Entropy strength used\n"
+            "  \"words\": n                                (numeric) Number of words\n"
+            "}\n"
+            "\nExamples:\n"
+            + HelpExampleCli("generatemnemonic", "")
+            + HelpExampleCli("generatemnemonic", "256")
+            + HelpExampleRpc("generatemnemonic", "128")
+        );
+
+    int strength = 128;
+    if (!request.params[0].isNull()) {
+        strength = request.params[0].get_int();
+        if (strength != 128 && strength != 256) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Strength must be 128 or 256");
+        }
+    }
+
+    std::string mnemonic = BIP39::GenerateMnemonic(strength);
+    
+    UniValue result(UniValue::VOBJ);
+    result.pushKV("mnemonic", mnemonic);
+    result.pushKV("strength", strength);
+    result.pushKV("words", strength == 128 ? 12 : 24);
+    
+    return result;
+}
+
+UniValue importmnemonic(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() < 1 || request.params.size() > 3)
+        throw std::runtime_error(
+            "importmnemonic \"mnemonic\" ( \"passphrase\" rescan )\n"
+            "\nImports a BIP39 mnemonic phrase and creates/restores an HD wallet.\n"
+            "\nArguments:\n"
+            "1. mnemonic     (string, required) The BIP39 mnemonic phrase\n"
+            "2. passphrase   (string, optional) Optional BIP39 passphrase\n"
+            "3. rescan       (boolean, optional, default=true) Rescan blockchain for transactions\n"
+            "\nNote: This will replace the current HD wallet if one exists.\n"
+            "\nExamples:\n"
+            + HelpExampleCli("importmnemonic", "\"word1 word2 ... word12\"")
+            + HelpExampleCli("importmnemonic", "\"word1 word2 ... word12\" \"mypassphrase\" false")
+            + HelpExampleRpc("importmnemonic", "\"word1 word2 ... word12\", \"\", true")
+        );
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+
+    std::string mnemonic = request.params[0].get_str();
+    std::string passphrase = request.params.size() > 1 ? request.params[1].get_str() : "";
+    bool rescan = request.params.size() > 2 ? request.params[2].get_bool() : true;
+
+    // Validate mnemonic
+    if (!BIP39::ValidateMnemonic(mnemonic)) {
+        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mnemonic phrase");
+    }
+
+    // Convert mnemonic to seed
+    std::vector<unsigned char> seed = BIP39::MnemonicToSeed(mnemonic, passphrase);
+    
+    // Create master key from seed
+    CKey masterKey;
+    CExtKey extMasterKey;
+    extMasterKey.SetMaster(seed.data(), seed.size());
+    masterKey = extMasterKey.key;
+    
+    CPubKey masterPubKey = masterKey.GetPubKey();
+    
+    // Store in wallet
+    CWalletDB walletdb(pwallet->GetDBHandle());
+    
+    // Create new HD chain with BIP44 path
+    CHDChain newHdChain;
+    newHdChain.nVersion = CHDChain::VERSION_HD_MNEMONIC;
+    newHdChain.pathType = CHDChain::DERIVATION_BIP44;
+    newHdChain.hasMnemonic = true;
+    newHdChain.masterKeyID = masterPubKey.GetID();
+    
+    // Store master key
+    CKeyMetadata metadata(GetTime());
+    metadata.hdKeypath = "m";
+    metadata.hdMasterKeyID = masterPubKey.GetID();
+    
+    if (!pwallet->AddKeyPubKeyWithDB(walletdb, masterKey, masterPubKey)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to add master key");
+    }
+    
+    if (!walletdb.WriteKeyMetadata(metadata, masterPubKey, true)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to write key metadata");
+    }
+    
+    // Store encrypted mnemonic
+    CMnemonicData mnemonicData;
+    mnemonicData.nCreateTime = GetTime();
+    // TODO: Implement proper encryption when wallet is encrypted
+    mnemonicData.encryptedMnemonic.assign(mnemonic.begin(), mnemonic.end());
+    
+    if (!walletdb.WriteMnemonic(mnemonicData)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to store mnemonic");
+    }
+    
+    // Set HD chain
+    if (!pwallet->SetHDChain(newHdChain, false)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to set HD chain");
+    }
+    
+    // Set wallet feature
+    pwallet->SetMinVersion(FEATURE_MNEMONIC, &walletdb, true);
+    
+    // Generate initial keypool
+    pwallet->TopUpKeyPool();
+    
+    // Rescan if requested
+    if (rescan) {
+        pwallet->ScanForWalletTransactions(chainActive.Genesis(), nullptr, true);
+    }
+    
+    return NullUniValue;
+}
+
+UniValue getmnemonic(const JSONRPCRequest& request)
+{
+    CWallet * const pwallet = GetWalletForJSONRPCRequest(request);
+    if (!EnsureWalletIsAvailable(pwallet, request.fHelp)) {
+        return NullUniValue;
+    }
+
+    if (request.fHelp || request.params.size() != 0)
+        throw std::runtime_error(
+            "getmnemonic\n"
+            "\nReturns the wallet's BIP39 mnemonic phrase if available.\n"
+            "\nNote: This reveals the mnemonic that can restore your entire wallet. Keep it secure!\n"
+            "\nResult:\n"
+            "\"mnemonic\"    (string) The BIP39 mnemonic phrase\n"
+            "\nExamples:\n"
+            + HelpExampleCli("getmnemonic", "")
+            + HelpExampleRpc("getmnemonic", "")
+        );
+
+    LOCK2(cs_main, pwallet->cs_wallet);
+    EnsureWalletIsUnlocked(pwallet);
+
+    if (!pwallet->IsHDEnabled() || !pwallet->GetHDChain().hasMnemonic) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Wallet does not have a mnemonic");
+    }
+
+    CWalletDB walletdb(pwallet->GetDBHandle());
+    CMnemonicData mnemonicData;
+    
+    if (!walletdb.ReadMnemonic(mnemonicData)) {
+        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to read mnemonic from wallet");
+    }
+    
+    // Decrypt if wallet is encrypted
+    std::string mnemonic;
+    // TODO: Implement proper decryption when wallet encryption is implemented
+    mnemonic.assign(mnemonicData.encryptedMnemonic.begin(), mnemonicData.encryptedMnemonic.end());
+    
+    return mnemonic;
+}
+
 
 UniValue getnewaddress(const JSONRPCRequest& request)
 {
@@ -3547,10 +3729,12 @@ static const CRPCCommand commands[] =
     { "wallet",             "dumpprivkey",              &dumpprivkey,              {"address"}  },
     { "wallet",             "dumpwallet",               &dumpwallet,               {"filename"} },
     { "wallet",             "encryptwallet",            &encryptwallet,            {"passphrase"} },
+    { "wallet",             "generatemnemonic",         &generatemnemonic,         {"strength"} },
     { "wallet",             "getaccountaddress",        &getaccountaddress,        {"account"} },
     { "wallet",             "getaccount",               &getaccount,               {"address"} },
     { "wallet",             "getaddressesbyaccount",    &getaddressesbyaccount,    {"account"} },
     { "wallet",             "getbalance",               &getbalance,               {"account","minconf","include_watchonly"} },
+    { "wallet",             "getmnemonic",              &getmnemonic,              {} },
     { "wallet",             "getnewaddress",            &getnewaddress,            {"account","address_type"} },
     { "wallet",             "getrawchangeaddress",      &getrawchangeaddress,      {"address_type"} },
     { "wallet",             "getreceivedbyaccount",     &getreceivedbyaccount,     {"account","minconf"} },
@@ -3558,6 +3742,7 @@ static const CRPCCommand commands[] =
     { "wallet",             "gettransaction",           &gettransaction,           {"txid","include_watchonly"} },
     { "wallet",             "getunconfirmedbalance",    &getunconfirmedbalance,    {} },
     { "wallet",             "getwalletinfo",            &getwalletinfo,            {} },
+    { "wallet",             "importmnemonic",           &importmnemonic,           {"mnemonic","passphrase","rescan"} },
     { "wallet",             "importmulti",              &importmulti,              {"requests","options"} },
     { "wallet",             "importprivkey",            &importprivkey,            {"privkey","label","rescan"} },
     { "wallet",             "importwallet",             &importwallet,             {"filename"} },

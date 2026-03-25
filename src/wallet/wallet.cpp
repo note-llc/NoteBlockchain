@@ -6,6 +6,7 @@
 #include <wallet/wallet.h>
 
 #include <base58.h>
+#include <bip39.h>
 #include <chain.h>
 #include <checkpoints.h>
 #include <consensus/consensus.h>
@@ -185,12 +186,9 @@ CPubKey CWallet::GenerateNewKey(CWalletDB& walletdb, bool internal)
 
 void CWallet::DeriveNewChildKey(CWalletDB& walletdb, CKeyMetadata& metadata, CKey& secret, bool internal)
 {
-    // for now we use a fixed keypath scheme of m/0'/0'/k
     CKey key;              //master key seed (256bit)
     CExtKey masterKey;     //hd master key
-    CExtKey accountKey;    //key at m/0'
-    CExtKey chainChildKey; //key at m/0'/0' (external) or m/0'/1' (internal)
-    CExtKey childKey;      //key at m/0'/0'/<n>'
+    CExtKey childKey;      //derived child key
 
     // try to get the master key
     if (!GetKey(hdChain.masterKeyID, key))
@@ -198,29 +196,68 @@ void CWallet::DeriveNewChildKey(CWalletDB& walletdb, CKeyMetadata& metadata, CKe
 
     masterKey.SetMaster(key.begin(), key.size());
 
-    // derive m/0'
-    // use hardened derivation (child keys >= 0x80000000 are hardened after bip32)
-    masterKey.Derive(accountKey, BIP32_HARDENED_KEY_LIMIT);
+    // Check derivation path type
+    if (hdChain.pathType == CHDChain::DERIVATION_BIP44) {
+        // BIP44 derivation: m/44'/2'/0'/0/x or m/44'/2'/0'/1/x
+        // m/44' (purpose)
+        CExtKey purposeKey;
+        masterKey.Derive(purposeKey, 44 | BIP32_HARDENED_KEY_LIMIT);
+        
+        // m/44'/2' (coin type - Litecoin)
+        CExtKey coinKey;
+        purposeKey.Derive(coinKey, 2 | BIP32_HARDENED_KEY_LIMIT);
+        
+        // m/44'/2'/0' (account)
+        CExtKey accountKey;
+        coinKey.Derive(accountKey, 0 | BIP32_HARDENED_KEY_LIMIT);
+        
+        // m/44'/2'/0'/0 (external) or m/44'/2'/0'/1 (internal/change)
+        CExtKey chainKey;
+        accountKey.Derive(chainKey, internal ? 1 : 0);
+        
+        // Derive child at index (non-hardened for BIP44)
+        do {
+            if (internal) {
+                chainKey.Derive(childKey, hdChain.nInternalChainCounter);
+                metadata.hdKeypath = "m/44'/2'/0'/1/" + std::to_string(hdChain.nInternalChainCounter);
+                hdChain.nInternalChainCounter++;
+            } else {
+                chainKey.Derive(childKey, hdChain.nExternalChainCounter);
+                metadata.hdKeypath = "m/44'/2'/0'/0/" + std::to_string(hdChain.nExternalChainCounter);
+                hdChain.nExternalChainCounter++;
+            }
+        } while (HaveKey(childKey.key.GetPubKey().GetID()));
+        
+    } else {
+        // Legacy derivation: m/0'/0'/x or m/0'/1'/x
+        CExtKey accountKey;    //key at m/0'
+        CExtKey chainChildKey; //key at m/0'/0' (external) or m/0'/1' (internal)
+        
+        // derive m/0'
+        // use hardened derivation (child keys >= 0x80000000 are hardened after bip32)
+        masterKey.Derive(accountKey, BIP32_HARDENED_KEY_LIMIT);
 
-    // derive m/0'/0' (external chain) OR m/0'/1' (internal chain)
-    assert(internal ? CanSupportFeature(FEATURE_HD_SPLIT) : true);
-    accountKey.Derive(chainChildKey, BIP32_HARDENED_KEY_LIMIT + (internal ? 1 : 0));
+        // derive m/0'/0' (external chain) OR m/0'/1' (internal chain)
+        assert(internal ? CanSupportFeature(FEATURE_HD_SPLIT) : true);
+        accountKey.Derive(chainChildKey, BIP32_HARDENED_KEY_LIMIT + (internal ? 1 : 0));
 
-    // derive child key at next index, skip keys already known to the wallet
-    do {
-        // always derive hardened keys
-        // childIndex | BIP32_HARDENED_KEY_LIMIT = derive childIndex in hardened child-index-range
-        // example: 1 | BIP32_HARDENED_KEY_LIMIT == 0x80000001 == 2147483649
-        if (internal) {
-            chainChildKey.Derive(childKey, hdChain.nInternalChainCounter | BIP32_HARDENED_KEY_LIMIT);
-            metadata.hdKeypath = "m/0'/1'/" + std::to_string(hdChain.nInternalChainCounter) + "'";
-            hdChain.nInternalChainCounter++;
-        } else {
-            chainChildKey.Derive(childKey, hdChain.nExternalChainCounter | BIP32_HARDENED_KEY_LIMIT);
-            metadata.hdKeypath = "m/0'/0'/" + std::to_string(hdChain.nExternalChainCounter) + "'";
-            hdChain.nExternalChainCounter++;
-        }
-    } while (HaveKey(childKey.key.GetPubKey().GetID()));
+        // derive child key at next index, skip keys already known to the wallet
+        do {
+            // always derive hardened keys
+            // childIndex | BIP32_HARDENED_KEY_LIMIT = derive childIndex in hardened child-index-range
+            // example: 1 | BIP32_HARDENED_KEY_LIMIT == 0x80000001 == 2147483649
+            if (internal) {
+                chainChildKey.Derive(childKey, hdChain.nInternalChainCounter | BIP32_HARDENED_KEY_LIMIT);
+                metadata.hdKeypath = "m/0'/1'/" + std::to_string(hdChain.nInternalChainCounter) + "'";
+                hdChain.nInternalChainCounter++;
+            } else {
+                chainChildKey.Derive(childKey, hdChain.nExternalChainCounter | BIP32_HARDENED_KEY_LIMIT);
+                metadata.hdKeypath = "m/0'/0'/" + std::to_string(hdChain.nExternalChainCounter) + "'";
+                hdChain.nExternalChainCounter++;
+            }
+        } while (HaveKey(childKey.key.GetPubKey().GetID()));
+    }
+    
     secret = childKey.key;
     metadata.hdMasterKeyID = hdChain.masterKeyID;
     // update the chain model in the database
@@ -3805,12 +3842,75 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
             InitError(strprintf(_("Error creating %s: You can't create non-HD wallets with this version."), walletFile));
             return nullptr;
         }
-        walletInstance->SetMinVersion(FEATURE_NO_DEFAULT_KEY);
+        walletInstance->SetMinVersion(FEATURE_MNEMONIC);
 
-        // generate a new master key
-        CPubKey masterPubKey = walletInstance->GenerateNewHDMasterKey();
-        if (!walletInstance->SetHDMasterKey(masterPubKey))
-            throw std::runtime_error(std::string(__func__) + ": Storing master key failed");
+        // Check if user wants to use mnemonic (default: true)
+        bool useMnemonic = gArgs.GetBoolArg("-usemnemonic", true);
+        
+        if (useMnemonic) {
+            // Generate BIP39 mnemonic and create BIP44 HD wallet
+            LogPrintf("Creating new wallet with BIP39 mnemonic...\n");
+            
+            // Generate mnemonic
+            std::string mnemonic = BIP39::GenerateMnemonic(128); // 12 words
+            LogPrintf("Generated mnemonic (SAVE THIS SECURELY): %s\n", mnemonic);
+            
+            // Convert to seed
+            std::vector<unsigned char> seed = BIP39::MnemonicToSeed(mnemonic, "");
+            
+            // Create master key from seed
+            CKey masterKey;
+            CExtKey extMasterKey;
+            extMasterKey.SetMaster(seed.data(), seed.size());
+            masterKey = extMasterKey.key;
+            CPubKey masterPubKey = masterKey.GetPubKey();
+            
+            // Store master key
+            CWalletDB walletdb(*walletInstance->dbw);
+            CKeyMetadata metadata(GetTime());
+            metadata.hdKeypath = "m";
+            metadata.hdMasterKeyID = masterPubKey.GetID();
+            
+            if (!walletInstance->AddKeyPubKeyWithDB(walletdb, masterKey, masterPubKey)) {
+                InitError(_("Failed to add master key"));
+                return nullptr;
+            }
+            
+            if (!walletdb.WriteKeyMetadata(metadata, masterPubKey, true)) {
+                InitError(_("Failed to write key metadata"));
+                return nullptr;
+            }
+            
+            // Store mnemonic
+            CMnemonicData mnemonicData;
+            mnemonicData.nCreateTime = GetTime();
+            mnemonicData.encryptedMnemonic.assign(mnemonic.begin(), mnemonic.end());
+            
+            if (!walletdb.WriteMnemonic(mnemonicData)) {
+                InitError(_("Failed to store mnemonic"));
+                return nullptr;
+            }
+            
+            // Create HD chain with BIP44 path
+            CHDChain newHdChain;
+            newHdChain.nVersion = CHDChain::VERSION_HD_MNEMONIC;
+            newHdChain.pathType = CHDChain::DERIVATION_BIP44;
+            newHdChain.hasMnemonic = true;
+            newHdChain.masterKeyID = masterPubKey.GetID();
+            
+            if (!walletInstance->SetHDChain(newHdChain, false)) {
+                InitError(_("Failed to set HD chain"));
+                return nullptr;
+            }
+            
+            uiInterface.InitMessage(_("Wallet created with BIP39 mnemonic. SAVE YOUR MNEMONIC PHRASE!"));
+        } else {
+            // Create legacy HD wallet (for compatibility)
+            LogPrintf("Creating legacy HD wallet...\n");
+            CPubKey masterPubKey = walletInstance->GenerateNewHDMasterKey();
+            if (!walletInstance->SetHDMasterKey(masterPubKey))
+                throw std::runtime_error(std::string(__func__) + ": Storing master key failed");
+        }
 
         // Top up the keypool
         if (!walletInstance->TopUpKeyPool()) {

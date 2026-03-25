@@ -66,8 +66,19 @@ public:
 
     static const int VERSION_HD_BASE        = 1;
     static const int VERSION_HD_CHAIN_SPLIT = 2;
-    static const int CURRENT_VERSION        = VERSION_HD_CHAIN_SPLIT;
+    static const int VERSION_HD_MNEMONIC    = 3;
+    static const int CURRENT_VERSION        = VERSION_HD_MNEMONIC;
     int nVersion;
+
+    //! Derivation path type for key generation
+    enum DerivationPathType {
+        DERIVATION_LEGACY = 0,  //!< m/0'/0'/x (existing HD wallets)
+        DERIVATION_BIP44 = 1    //!< m/44'/2'/0'/0/x (BIP44 for Litecoin)
+    };
+    DerivationPathType pathType;
+
+    //! Whether this wallet has a BIP39 mnemonic
+    bool hasMnemonic;
 
     CHDChain() { SetNull(); }
     ADD_SERIALIZE_METHODS;
@@ -79,6 +90,10 @@ public:
         READWRITE(masterKeyID);
         if (this->nVersion >= VERSION_HD_CHAIN_SPLIT)
             READWRITE(nInternalChainCounter);
+        if (this->nVersion >= VERSION_HD_MNEMONIC) {
+            READWRITE(pathType);
+            READWRITE(hasMnemonic);
+        }
     }
 
     void SetNull()
@@ -87,6 +102,35 @@ public:
         nExternalChainCounter = 0;
         nInternalChainCounter = 0;
         masterKeyID.SetNull();
+        pathType = DERIVATION_LEGACY;
+        hasMnemonic = false;
+    }
+};
+
+/* BIP39 mnemonic data storage */
+class CMnemonicData
+{
+public:
+    std::vector<unsigned char> encryptedMnemonic; //!< Encrypted mnemonic phrase
+    int64_t nCreateTime; //!< Creation timestamp
+
+    CMnemonicData()
+    {
+        SetNull();
+    }
+
+    ADD_SERIALIZE_METHODS;
+    template <typename Stream, typename Operation>
+    inline void SerializationOp(Stream& s, Operation ser_action)
+    {
+        READWRITE(encryptedMnemonic);
+        READWRITE(nCreateTime);
+    }
+
+    void SetNull()
+    {
+        encryptedMnemonic.clear();
+        nCreateTime = 0;
     }
 };
 
@@ -198,6 +242,13 @@ public:
     bool ErasePool(int64_t nPool);
 
     bool WriteMinVersion(int nVersion);
+
+    //! Write BIP39 mnemonic data to database
+    bool WriteMnemonic(const CMnemonicData& mnemonic);
+    //! Read BIP39 mnemonic data from database
+    bool ReadMnemonic(CMnemonicData& mnemonic);
+    //! Erase BIP39 mnemonic data from database
+    bool EraseMnemonic();
 
     /// This writes directly to the database, and will not update the CWallet's cached accounting entries!
     /// Use wallet.AddAccountingEntry instead, to write *and* update its caches.

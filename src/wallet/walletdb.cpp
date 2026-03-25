@@ -832,6 +832,21 @@ bool CWalletDB::WriteHDChain(const CHDChain& chain)
     return WriteIC(std::string("hdchain"), chain);
 }
 
+bool CWalletDB::WriteMnemonic(const CMnemonicData& mnemonic)
+{
+    return WriteIC(std::string("mnemonic"), mnemonic);
+}
+
+bool CWalletDB::ReadMnemonic(CMnemonicData& mnemonic)
+{
+    return ReadIC(std::string("mnemonic"), mnemonic);
+}
+
+bool CWalletDB::EraseMnemonic()
+{
+    return EraseIC(std::string("mnemonic"));
+}
+
 bool CWalletDB::TxnBegin()
 {
     return batch.TxnBegin();

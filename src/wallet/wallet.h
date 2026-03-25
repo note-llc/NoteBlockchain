@@ -97,7 +97,9 @@ enum WalletFeature
 
     FEATURE_NO_DEFAULT_KEY = 159900, // Wallet without a default key written
 
-    FEATURE_LATEST = FEATURE_COMPRPUBKEY // HD is optional, use FEATURE_COMPRPUBKEY as latest version
+    FEATURE_MNEMONIC = 160000, // BIP39 mnemonic seed support with BIP44 derivation
+
+    FEATURE_LATEST = FEATURE_MNEMONIC // Mnemonic support is now the latest feature
 };
 
 enum OutputType : int
