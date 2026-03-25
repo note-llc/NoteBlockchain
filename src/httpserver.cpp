@@ -23,6 +23,8 @@
 #include <signal.h>
 #include <future>
 
+
+#include <deque>
 #include <event2/thread.h>
 #include <event2/buffer.h>
 #include <event2/bufferevent.h>
