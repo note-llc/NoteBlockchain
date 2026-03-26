@@ -8,7 +8,7 @@
 #include <crypto/sha512.h>
 #include <random.h>
 #include <utilstrencodings.h>
-
+#include <crypto/hmac_sha512.h>
 #include <algorithm>
 #include <sstream>
 #include <stdexcept>

@@ -3871,13 +3871,11 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
             metadata.hdKeypath = "m";
             metadata.hdMasterKeyID = masterPubKey.GetID();
             
+            // Add metadata to wallet's map before adding the key
+            walletInstance->mapKeyMetadata[masterPubKey.GetID()] = metadata;
+            
             if (!walletInstance->AddKeyPubKeyWithDB(walletdb, masterKey, masterPubKey)) {
                 InitError(_("Failed to add master key"));
-                return nullptr;
-            }
-            
-            if (!walletdb.WriteKeyMetadata(metadata, masterPubKey, true)) {
-                InitError(_("Failed to write key metadata"));
                 return nullptr;
             }
             
