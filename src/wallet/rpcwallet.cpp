@@ -233,12 +233,11 @@ UniValue importmnemonic(const JSONRPCRequest& request)
     metadata.hdKeypath = "m";
     metadata.hdMasterKeyID = masterPubKey.GetID();
     
+    // Add metadata to wallet's map before adding the key
+    pwallet->mapKeyMetadata[masterPubKey.GetID()] = metadata;
+    
     if (!pwallet->AddKeyPubKeyWithDB(walletdb, masterKey, masterPubKey)) {
         throw JSONRPCError(RPC_WALLET_ERROR, "Failed to add master key");
-    }
-    
-    if (!walletdb.WriteKeyMetadata(metadata, masterPubKey, true)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to write key metadata");
     }
     
     // Store encrypted mnemonic
