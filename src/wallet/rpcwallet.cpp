@@ -263,7 +263,11 @@ UniValue importmnemonic(const JSONRPCRequest& request)
     
     // Rescan if requested
     if (rescan) {
-        pwallet->ScanForWalletTransactions(chainActive.Genesis(), nullptr, true);
+        WalletRescanReserver reserver(pwallet);
+        if (!reserver.reserve()) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Wallet is currently rescanning. Please try again later.");
+        }
+        pwallet->ScanForWalletTransactions(chainActive.Genesis(), nullptr, reserver, true);
     }
     
     return NullUniValue;

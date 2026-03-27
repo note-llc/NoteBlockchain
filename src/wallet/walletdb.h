@@ -91,7 +91,14 @@ public:
         if (this->nVersion >= VERSION_HD_CHAIN_SPLIT)
             READWRITE(nInternalChainCounter);
         if (this->nVersion >= VERSION_HD_MNEMONIC) {
-            READWRITE(pathType);
+            if (ser_action.ForRead()) {
+                int nPathType;
+                READWRITE(nPathType);
+                pathType = static_cast<DerivationPathType>(nPathType);
+            } else {
+                int nPathType = static_cast<int>(pathType);
+                READWRITE(nPathType);
+            }
             READWRITE(hasMnemonic);
         }
     }

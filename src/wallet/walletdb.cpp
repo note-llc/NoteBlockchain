@@ -839,7 +839,7 @@ bool CWalletDB::WriteMnemonic(const CMnemonicData& mnemonic)
 
 bool CWalletDB::ReadMnemonic(CMnemonicData& mnemonic)
 {
-    return ReadIC(std::string("mnemonic"), mnemonic);
+    return batch.Read(std::string("mnemonic"), mnemonic);
 }
 
 bool CWalletDB::EraseMnemonic()
