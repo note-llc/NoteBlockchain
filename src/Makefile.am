@@ -327,6 +327,7 @@ libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_a_SOURCES = \
   base58.cpp \
   bech32.cpp \
+  bip39.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \
