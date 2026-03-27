@@ -3842,8 +3842,6 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
             InitError(strprintf(_("Error creating %s: You can't create non-HD wallets with this version."), walletFile));
             return nullptr;
         }
-        walletInstance->SetMinVersion(FEATURE_MNEMONIC);
-
         // Check if user wants to use mnemonic (default: true)
         bool useMnemonic = gArgs.GetBoolArg("-usemnemonic", true);
         
@@ -3853,7 +3851,6 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
             
             // Generate mnemonic
             std::string mnemonic = BIP39::GenerateMnemonic(128); // 12 words
-            LogPrintf("Generated mnemonic (SAVE THIS SECURELY): %s\n", mnemonic);
             
             // Convert to seed
             std::vector<unsigned char> seed = BIP39::MnemonicToSeed(mnemonic, "");
@@ -3901,7 +3898,31 @@ CWallet* CWallet::CreateWalletFromFile(const std::string walletFile)
                 return nullptr;
             }
             
-            uiInterface.InitMessage(_("Wallet created with BIP39 mnemonic. SAVE YOUR MNEMONIC PHRASE!"));
+            // Set wallet version to FEATURE_MNEMONIC and write to database
+            walletInstance->SetMinVersion(FEATURE_MNEMONIC, &walletdb, true);
+            
+            // Display mnemonic to user - CRITICAL: User must save this!
+            std::string mnemonicMessage = strprintf(
+                "\n"
+                "================================================================================\n"
+                "IMPORTANT: SAVE YOUR MNEMONIC PHRASE!\n"
+                "================================================================================\n"
+                "\n"
+                "Your wallet has been created with the following BIP39 mnemonic phrase:\n"
+                "\n"
+                "    %s\n"
+                "\n"
+                "WRITE THIS DOWN AND STORE IT SECURELY!\n"
+                "This phrase is the ONLY way to recover your wallet if you lose access.\n"
+                "Anyone with this phrase can access your funds.\n"
+                "\n"
+                "You can view this phrase again using the 'getmnemonic' RPC command.\n"
+                "================================================================================\n",
+                mnemonic
+            );
+            
+            LogPrintf("%s", mnemonicMessage);
+            uiInterface.InitMessage(_(mnemonicMessage.c_str()));
         } else {
             // Create legacy HD wallet (for compatibility)
             LogPrintf("Creating legacy HD wallet...\n");
