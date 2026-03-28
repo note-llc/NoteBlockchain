@@ -278,6 +278,9 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha1.h \
   crypto/sha256.cpp \
   crypto/sha256.h \
+  bip39.cpp \
+  bip39.h \
+  bip39_wordlist.h \
   crypto/sha512.cpp \
   crypto/sha512.h
 
@@ -326,7 +329,6 @@ libbitcoin_common_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_a_SOURCES = \
   base58.cpp \
   bech32.cpp \
-  bip39.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \
