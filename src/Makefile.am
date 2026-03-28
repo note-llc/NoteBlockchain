@@ -395,11 +395,12 @@ endif
 
 notecoind_LDADD = \
   $(LIBBITCOIN_SERVER) \
-  -Wl,--start-group \
   $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_CRYPTO) \
-  -Wl,--end-group \
+  $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBUNIVALUE) \
