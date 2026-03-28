@@ -2,8 +2,8 @@
 // Distributed under the MIT software license, see the accompanying
 // file COPYING or http://www.opensource.org/licenses/mit-license.php.
 
-#include <bip39.h>
-#include <bip39_wordlist.h>
+#include <crypto/bip39.h>
+#include <crypto/bip39_wordlist.h>
 #include <crypto/sha256.h>
 #include <crypto/sha512.h>
 #include <random.h>

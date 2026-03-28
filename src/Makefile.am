@@ -79,8 +79,6 @@ BITCOIN_CORE_H = \
   addrman.h \
   base58.h \
   bech32.h \
-  bip39.h \
-  bip39_wordlist.h \
   bloom.h \
   blockencodings.h \
   chain.h \
@@ -262,6 +260,9 @@ crypto_libbitcoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
+  crypto/bip39.cpp \
+  crypto/bip39.h \
+  crypto/bip39_wordlist.h \
   crypto/chacha20.h \
   crypto/chacha20.cpp \
   crypto/common.h \
@@ -278,9 +279,6 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha1.h \
   crypto/sha256.cpp \
   crypto/sha256.h \
-  bip39.cpp \
-  bip39.h \
-  bip39_wordlist.h \
   crypto/sha512.cpp \
   crypto/sha512.h
 

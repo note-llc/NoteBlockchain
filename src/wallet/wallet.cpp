@@ -6,7 +6,7 @@
 #include <wallet/wallet.h>
 
 #include <base58.h>
-#include <bip39.h>
+#include <crypto/bip39.h>
 #include <chain.h>
 #include <checkpoints.h>
 #include <consensus/consensus.h>

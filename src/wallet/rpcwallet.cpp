@@ -5,7 +5,7 @@
 
 #include <amount.h>
 #include <base58.h>
-#include <bip39.h>
+#include <crypto/bip39.h>
 #include <chain.h>
 #include <consensus/validation.h>
 #include <core_io.h>
