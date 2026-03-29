@@ -28,7 +28,7 @@ LIBBITCOIN_COMMON=libbitcoin_common.a
 LIBBITCOIN_CONSENSUS=libbitcoin_consensus.a
 LIBBITCOIN_CLI=libbitcoin_cli.a
 LIBBITCOIN_UTIL=libbitcoin_util.a
-LIBBITCOIN_CRYPTO=crypto/libbitcoin_crypto.a
+LIBBITCOIN_CRYPTO=crypto/libbitcoin_crypto.la
 LIBBITCOINQT=qt/libbitcoinqt.a
 LIBSECP256K1=secp256k1/libsecp256k1.la
 
@@ -48,7 +48,6 @@ $(LIBSECP256K1): $(wildcard secp256k1/src/*) $(wildcard secp256k1/include/*)
 # Make is not made aware of per-object dependencies to avoid limiting building parallelization
 # But to build the less dependent modules first, we manually select their order here:
 EXTRA_LIBRARIES += \
-  $(LIBBITCOIN_CRYPTO) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_CONSENSUS) \
@@ -57,7 +56,7 @@ EXTRA_LIBRARIES += \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_ZMQ)
 
-lib_LTLIBRARIES = $(LIBBITCOINCONSENSUS)
+lib_LTLIBRARIES = $(LIBBITCOINCONSENSUS) $(LIBBITCOIN_CRYPTO)
 
 bin_PROGRAMS =
 noinst_PROGRAMS =
@@ -257,7 +256,10 @@ libbitcoin_wallet_a_SOURCES = \
 # crypto primitives library
 crypto_libbitcoin_crypto_a_CPPFLAGS = $(AM_CPPFLAGS) $(SSL_CFLAGS)
 crypto_libbitcoin_crypto_a_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-crypto_libbitcoin_crypto_a_SOURCES = \
+crypto_libbitcoin_crypto_la_CPPFLAGS = $(AM_CPPFLAGS) $(SSL_CFLAGS)
+crypto_libbitcoin_crypto_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+crypto_libbitcoin_crypto_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
+crypto_libbitcoin_crypto_la_SOURCES = \
   crypto/aes.cpp \
   crypto/aes.h \
   crypto/bip39.cpp \
@@ -283,7 +285,7 @@ crypto_libbitcoin_crypto_a_SOURCES = \
   crypto/sha512.h
 
 if USE_ASM
-crypto_libbitcoin_crypto_a_SOURCES += crypto/sha256_sse4.cpp
+crypto_libbitcoin_crypto_la_SOURCES += crypto/sha256_sse4.cpp
 endif
 
 # consensus: shared between all executables that validate any consensus rules.
@@ -398,10 +400,11 @@ notecoind_LDADD = \
   $(LIBBITCOIN_COMMON) \
   $(LIBUNIVALUE) \
   $(LIBBITCOIN_UTIL) \
-  $(LIBBITCOIN_WALLET) \
-  $(LIBBITCOIN_ZMQ) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_ZMQ) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
