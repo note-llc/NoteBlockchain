@@ -387,14 +387,14 @@ nodist_libbitcoin_util_a_SOURCES = $(srcdir)/obj/build.h
 notecoind_SOURCES = bitcoind.cpp
 notecoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 notecoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) \
+  -Wl,--start-group
 
 if TARGET_WINDOWS
 notecoind_SOURCES += bitcoind-res.rc
 endif
 
 notecoind_LDADD = \
-  -Wl,--start-group \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_COMMON) \
