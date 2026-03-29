@@ -1,0 +1,43 @@
+# Bob's Fixed Makefile for NoteBlockchain
+# This fixes the circular dependency issues by using linker groups
+
+notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
+
+if TARGET_WINDOWS
+notecoind_SOURCES += bitcoind-res.rc
+endif
+
+# Use linker groups to handle circular dependencies
+# The linker will scan these libraries multiple times until all symbols are resolved
+notecoind_LDADD = \
+  -Wl,--start-group \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
+  -Wl,--end-group \
+  $(LIBUNIVALUE) \
+  $(LIBBITCOIN_ZMQ) \
+  $(LIBLEVELDB) \
+  $(LIBLEVELDB_SSE42) \
+  $(LIBMEMENV) \
+  $(LIBSECP256K1)
+
+notecoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
+
+# Explanation:
+# --start-group and --end-group tell the linker to:
+# 1. Scan all libraries in the group multiple times
+# 2. Resolve circular dependencies automatically
+# 3. Extract symbols as needed regardless of order
+#
+# This handles all circular dependencies:
+# - SERVER ↔ WALLET
+# - WALLET → CRYPTO (AES, BIP39)
+# - CONSENSUS → CRYPTO (CSHA256, etc.)
+# - SERVER → COMMON, UTIL, CONSENSUS
+#
+# Libraries outside the group (UNIVALUE, ZMQ, LEVELDB, etc.) 
+# have no circular dependencies with our code.
