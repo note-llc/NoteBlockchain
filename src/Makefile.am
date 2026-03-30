@@ -239,7 +239,7 @@ endif
 libbitcoin_wallet_la_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_wallet_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_wallet_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
-libbitcoin_wallet_la_LIBADD = $(LIBBITCOIN_CRYPTO)
+libbitcoin_wallet_la_LIBADD = $(LIBBITCOIN_COMMON) $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_CONSENSUS) $(LIBSECP256K1)
 libbitcoin_wallet_la_SOURCES = \
   wallet/crypter.cpp \
   wallet/db.cpp \
@@ -325,6 +325,7 @@ libbitcoin_consensus_a_SOURCES = \
 libbitcoin_common_la_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_common_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
+libbitcoin_common_la_LIBADD = $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_CONSENSUS) $(LIBSECP256K1)
 libbitcoin_common_la_SOURCES = \
   base58.cpp \
   bech32.cpp \
@@ -351,7 +352,7 @@ libbitcoin_common_la_SOURCES = \
 libbitcoin_util_la_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_util_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_util_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
-libbitcoin_util_la_LIBADD = $(LIBBITCOIN_COMMON) $(LIBUNIVALUE)
+libbitcoin_util_la_LIBADD = $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_COMMON) $(LIBUNIVALUE)
 libbitcoin_util_la_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
