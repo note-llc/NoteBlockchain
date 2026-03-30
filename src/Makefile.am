@@ -354,6 +354,7 @@ libbitcoin_util_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
 libbitcoin_util_la_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
+  clientversion.cpp \
   compat/glibc_sanity.cpp \
   compat/glibcxx_sanity.cpp \
   compat/strnlen.cpp \
@@ -381,7 +382,8 @@ libbitcoin_cli_a_SOURCES = \
   rpc/client.cpp \
   $(BITCOIN_CORE_H)
 
-nodist_libbitcoin_util_la_SOURCES = $(srcdir)/obj/build.h clientversion.cpp
+nodist_libbitcoin_util_la_SOURCES = $(srcdir)/obj/build.h
+BUILT_SOURCES = $(srcdir)/obj/build.h
 #
 
 # bitcoind binary #
