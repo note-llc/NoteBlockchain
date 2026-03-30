@@ -239,7 +239,7 @@ endif
 libbitcoin_wallet_la_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_wallet_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_wallet_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
-libbitcoin_wallet_la_LIBADD = $(LIBBITCOIN_COMMON) $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_CONSENSUS) $(LIBSECP256K1)
+libbitcoin_wallet_la_LIBADD = $(LIBBITCOIN_COMMON) $(LIBBITCOIN_CRYPTO) $(LIBSECP256K1)
 libbitcoin_wallet_la_SOURCES = \
   wallet/crypter.cpp \
   wallet/db.cpp \
@@ -325,24 +325,35 @@ libbitcoin_consensus_a_SOURCES = \
 libbitcoin_common_la_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_common_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_common_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
-libbitcoin_common_la_LIBADD = $(LIBBITCOIN_CRYPTO) $(LIBBITCOIN_CONSENSUS) $(LIBSECP256K1)
+libbitcoin_common_la_LIBADD = $(LIBBITCOIN_CRYPTO) $(LIBSECP256K1)
 libbitcoin_common_la_SOURCES = \
+  arith_uint256.cpp \
   base58.cpp \
   bech32.cpp \
   chainparams.cpp \
   coins.cpp \
   compressor.cpp \
+  consensus/merkle.cpp \
   core_read.cpp \
   core_write.cpp \
+  hash.cpp \
   key.cpp \
   keystore.cpp \
   netaddress.cpp \
   netbase.cpp \
   policy/feerate.cpp \
+  primitives/block.cpp \
+  primitives/transaction.cpp \
   protocol.cpp \
+  pubkey.cpp \
   scheduler.cpp \
+  script/interpreter.cpp \
+  script/script.cpp \
+  script/script_error.cpp \
   script/sign.cpp \
   script/standard.cpp \
+  uint256.cpp \
+  utilstrencodings.cpp \
   warnings.cpp \
   $(BITCOIN_CORE_H)
 
