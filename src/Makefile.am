@@ -351,6 +351,7 @@ libbitcoin_common_la_SOURCES = \
 libbitcoin_util_la_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 libbitcoin_util_la_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
 libbitcoin_util_la_LDFLAGS = $(AM_LDFLAGS) -no-undefined -version-info 0:0:0
+libbitcoin_util_la_LIBADD = $(LIBBITCOIN_COMMON) $(LIBUNIVALUE)
 libbitcoin_util_la_SOURCES = \
   support/lockedpool.cpp \
   chainparamsbase.cpp \
