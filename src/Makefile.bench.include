@@ -33,7 +33,16 @@ nodist_bench_bench_notecoin_SOURCES = $(GENERATED_BENCH_FILES)
 
 bench_bench_notecoin_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CLFAGS) $(EVENT_PTHREADS_CFLAGS) -I$(builddir)/bench/
 bench_bench_notecoin_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
+# Note: WALLET library must be listed before CRYPTO library in LDADD
+# because WALLET depends on CRYPTO (for BIP39 and AES functions)
+if ENABLE_WALLET
 bench_bench_notecoin_LDADD = \
+  $(LIBBITCOIN_WALLET)
+else
+bench_bench_notecoin_LDADD =
+endif
+
+bench_bench_notecoin_LDADD += \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
@@ -47,8 +56,6 @@ bench_bench_notecoin_LDADD = \
 
 if ENABLE_WALLET
 bench_bench_notecoin_SOURCES += bench/coin_selection.cpp
-# WALLET must come before CRYPTO since it depends on it
-bench_bench_notecoin_LDADD := $(LIBBITCOIN_WALLET) $(bench_bench_notecoin_LDADD)
 endif
 
 if ENABLE_ZMQ
