@@ -47,7 +47,8 @@ bench_bench_notecoin_LDADD = \
 
 if ENABLE_WALLET
 bench_bench_notecoin_SOURCES += bench/coin_selection.cpp
-bench_bench_notecoin_LDADD += $(LIBBITCOIN_WALLET)
+# WALLET must come before CRYPTO since it depends on it
+bench_bench_notecoin_LDADD := $(LIBBITCOIN_WALLET) $(bench_bench_notecoin_LDADD)
 endif
 
 if ENABLE_ZMQ
