@@ -400,7 +400,7 @@ BUILT_SOURCES = $(srcdir)/obj/build.h
 notecoind_SOURCES = bitcoind.cpp
 notecoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 notecoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -Wl,--no-as-needed
+notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -Wl,--no-as-needed -Wl,--start-group
 
 if TARGET_WINDOWS
 notecoind_SOURCES += bitcoind-res.rc
@@ -418,7 +418,8 @@ notecoind_LDADD = \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \
-  $(LIBSECP256K1)
+  $(LIBSECP256K1) \
+  -Wl,--end-group
 
 notecoind_LDADD += $(BOOST_LIBS) $(BDB_LIBS) $(SSL_LIBS) $(CRYPTO_LIBS) $(MINIUPNPC_LIBS) $(EVENT_PTHREADS_LIBS) $(EVENT_LIBS) $(ZMQ_LIBS)
 
