@@ -29,6 +29,9 @@
 #include <wallet/wallet.h>
 #include <wallet/walletdb.h> // for BackupWallet
 
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
+
 #include <stdint.h>
 
 #include <QDebug>

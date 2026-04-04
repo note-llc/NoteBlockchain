@@ -1,2 +1,78 @@
+# Build artifacts
 compile.txt
 compile_verbose.txt
+*.o
+*.a
+*.la
+*.lo
+
+# Autotools generated files
+/config.log
+/config.status
+/libtool
+/libbitcoinconsensus.pc
+/aclocal.m4
+/autom4te.cache/
+/build-aux/compile
+/build-aux/config.guess
+/build-aux/config.sub
+/build-aux/depcomp
+/build-aux/install-sh
+/build-aux/ltmain.sh
+/build-aux/missing
+/build-aux/test-driver
+/src/config/bitcoin-config.h
+/src/config/bitcoin-config.h.in~
+/src/config/stamp-h1
+.dirstamp
+
+# Build output
+/src/notecoin-cli
+/src/notecoin-tx
+/src/notecoind
+*.log
+
+# IDE and editor files
+.vscode/
+*.swp
+*.swo
+*~
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test artifacts
+test/__pycache__/
+test/functional/__pycache__/
+test/functional/test_framework/__pycache__/
+test/cache/
+test/tmp/
+
+# Coverage
+*.gcda
+*.gcno
+coverage_percent.txt
+test_bitcoin.coverage/
+total.coverage/
+
+# Qt generated files
+src/qt/moc_*.cpp
+src/qt/*.moc
+src/qt/forms/ui_*.h
+src/qt/qrc_*.cpp
+src/qt/locale/*.qm
+src/qt/paymentrequest.pb.cc
+src/qt/paymentrequest.pb.h
+
+# Libraries
+/src/leveldb/
+/src/secp256k1/.libs/
+/src/univalue/.libs/
+*.dylib
+*.so
+*.dll
+
+# Build directories
+.libs/
+_libs/
