@@ -400,24 +400,40 @@ BUILT_SOURCES = $(srcdir)/obj/build.h
 notecoind_SOURCES = bitcoind.cpp
 notecoind_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES)
 notecoind_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS) -Wl,--no-as-needed
+notecoind_LDFLAGS = $(RELDFLAGS) $(AM_LDFLAGS) $(LIBTOOL_APP_LDFLAGS)
 
 if TARGET_WINDOWS
 notecoind_SOURCES += bitcoind-res.rc
 endif
 
+# Fix circular dependencies by listing interdependent libraries multiple times
+# This allows the linker to resolve symbols across WALLET ↔ SERVER ↔ CRYPTO ↔ COMMON ↔ CONSENSUS ↔ UTIL
+# The order and repetition ensures all cross-dependencies are resolved
+# Key dependencies: COMMON→CRYPTO, WALLET→CRYPTO, CONSENSUS→CRYPTO, SERVER→COMMON, WALLET→COMMON
 notecoind_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_WALLET) \
-  $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_CRYPTO) \
   $(LIBBITCOIN_WALLET) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
-  $(LIBBITCOIN_ZMQ) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_UTIL) \
   $(LIBUNIVALUE) \
+  $(LIBBITCOIN_ZMQ) \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \

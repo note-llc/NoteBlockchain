@@ -33,22 +33,36 @@ nodist_bench_bench_notecoin_SOURCES = $(GENERATED_BENCH_FILES)
 
 bench_bench_notecoin_CPPFLAGS = $(AM_CPPFLAGS) $(BITCOIN_INCLUDES) $(EVENT_CLFAGS) $(EVENT_PTHREADS_CFLAGS) -I$(builddir)/bench/
 bench_bench_notecoin_CXXFLAGS = $(AM_CXXFLAGS) $(PIE_FLAGS)
-# Note: WALLET library must be listed before CRYPTO library in LDADD
-# because WALLET depends on CRYPTO (for BIP39 and AES functions)
+# Fix circular dependencies by listing interdependent libraries multiple times
 if ENABLE_WALLET
 bench_bench_notecoin_LDADD = \
-  $(LIBBITCOIN_WALLET)
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_SERVER) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_WALLET) \
+  $(LIBBITCOIN_CONSENSUS) \
+  $(LIBBITCOIN_CRYPTO) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_CRYPTO)
 else
-bench_bench_notecoin_LDADD =
-endif
-
-bench_bench_notecoin_LDADD += \
+bench_bench_notecoin_LDADD = \
   $(LIBBITCOIN_SERVER) \
   $(LIBBITCOIN_COMMON) \
   $(LIBBITCOIN_UTIL) \
   $(LIBBITCOIN_CONSENSUS) \
   $(LIBBITCOIN_CRYPTO) \
-  $(LIBBITCOIN_UTIL) \
+  $(LIBBITCOIN_COMMON) \
+  $(LIBBITCOIN_CRYPTO)
+endif
+
+bench_bench_notecoin_LDADD += \
   $(LIBLEVELDB) \
   $(LIBLEVELDB_SSE42) \
   $(LIBMEMENV) \

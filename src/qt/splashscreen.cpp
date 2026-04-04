@@ -20,6 +20,9 @@
 #include <wallet/wallet.h>
 #endif
 
+#include <boost/bind/bind.hpp>
+using namespace boost::placeholders;
+
 #include <QApplication>
 #include <QCloseEvent>
 #include <QDesktopWidget>

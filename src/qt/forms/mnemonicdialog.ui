@@ -71,7 +71,7 @@
     </spacer>
    </item>
    <item>
-    <widget name="QFrame" name="warningFrame">
+    <widget class="QFrame" name="warningFrame">
      <property name="frameShape">
       <enum>QFrame::StyledPanel</enum>
      </property>
