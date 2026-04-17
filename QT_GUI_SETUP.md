@@ -72,41 +72,56 @@ sudo apt-get install -y qtbase5-dev qttools5-dev qttools5-dev-tools \
     libprotobuf-dev protobuf-compiler libqrencode-dev
 ```
 
-### Step 2: Clean Previous Build
+### Step 2: Clone the code
 
 ```bash
-cd /home/rvish/NoteBlockchain
-make clean
+git clone https://github.com/note-llc/NoteBlockchain.git
+cd NoteBlockchain
+chmod +x ./contrib/install_db4.sh
+./contrib/install_db4.sh `pwd`
 ```
 
-### Step 3: Reconfigure with Qt
+This will result in building Berkley DB locally from source. At the end of the build process, it will display two commands that you need to save. For example, it might look something like this
 
 ```bash
-./configure \
-    BDB_LIBS='-L/home/rvish/NoteBlockchain/db4/lib -ldb_cxx-4.8' \
-    BDB_CFLAGS=-I/home/rvish/NoteBlockchain/db4/include \
-    --with-gui=qt5
+  export BDB_PREFIX='your/library/here'
+  ./configure BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" BDB_CFLAGS="-I${BDB_PREFIX}/include"
 ```
 
-### Step 4: Verify Qt is Enabled
+Execute the first export command and copy the ./configure command. You will need this later.
 
-Check the configure output for:
-```
-checking whether to build Notebc Core GUI... yes (Qt5)
+### Step 3: Build the code
+
+```bash
+./autogen.sh
 ```
 
-### Step 5: Compile
+This builds the configure script which can now be executed.
+
+```bash
+./configure BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" BDB_CFLAGS="-I${BDB_PREFIX}/include"
+```
+
+### Step 4: Compile
 
 ```bash
 make -j$(nproc)
 ```
 
-### Step 6: Verify Qt Binary
+### Step 6: Verify Binaries generated
 
 ```bash
-ls -lh src/qt/notecoin-qt
-# Should show the GUI binary
+ls -lh src/qt/notecoin-qt src/notecoin-cli src/notecoind
+# Should show the binaries
 ```
+
+### Step 7: (Optional) Install the binaries
+
+```bash
+sudo make install
+```
+
+This will copy the binaries to a folder so that you can invoke the commands notecoin* directly from anywhere.
 
 ---
 
@@ -148,8 +163,6 @@ notecoin-qt
 
 ```bash
 sudo apt-get install -y qtbase5-dev qttools5-dev qttools5-dev-tools
-./configure BDB_LIBS='-L/home/rvish/NoteBlockchain/db4/lib -ldb_cxx-4.8' \
-    BDB_CFLAGS=-I/home/rvish/NoteBlockchain/db4/include --with-gui=qt5
 ```
 
 ### Issue: "protobuf not found"
@@ -194,9 +207,7 @@ The notecoin-qt GUI provides:
 If you don't need the GUI, you can explicitly disable it:
 
 ```bash
-./configure \
-    BDB_LIBS='-L/home/rvish/NoteBlockchain/db4/lib -ldb_cxx-4.8' \
-    BDB_CFLAGS=-I/home/rvish/NoteBlockchain/db4/include \
+./configure BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" BDB_CFLAGS="-I${BDB_PREFIX}/include" \
     --without-gui
 ```
 
@@ -213,7 +224,10 @@ This builds only:
 #!/bin/bash
 # Build NoteBlockchain with Qt GUI
 
-cd /home/rvish/NoteBlockchain
+git clone https://github.com/note-llc/NoteBlockchain.git
+cd NoteBlockchain
+chmod +x ./contrib/install_db4.sh
+./contrib/install_db4.sh `pwd`
 
 # Install dependencies
 echo "Installing Qt dependencies..."
@@ -222,19 +236,13 @@ sudo apt-get install -y \
     qtbase5-dev qttools5-dev qttools5-dev-tools \
     libprotobuf-dev protobuf-compiler libqrencode-dev
 
-# Clean previous build
-echo "Cleaning previous build..."
-make clean 2>/dev/null || true
-
 # Generate build files
 echo "Running autogen.sh..."
 ./autogen.sh
 
 # Configure with Qt
 echo "Configuring with Qt GUI..."
-./configure \
-    BDB_LIBS='-L/home/rvish/NoteBlockchain/db4/lib -ldb_cxx-4.8' \
-    BDB_CFLAGS=-I/home/rvish/NoteBlockchain/db4/include \
+./configure BDB_LIBS="-L${BDB_PREFIX}/lib -ldb_cxx-4.8" BDB_CFLAGS="-I${BDB_PREFIX}/include" \
     --with-gui=qt5
 
 # Check if Qt was enabled
