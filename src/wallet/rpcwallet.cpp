@@ -186,9 +186,13 @@ UniValue importmnemonic(const JSONRPCRequest& request)
             "\nImports a BIP39 mnemonic phrase and creates/restores an HD wallet.\n"
             "\nArguments:\n"
             "1. mnemonic     (string, required) The BIP39 mnemonic phrase\n"
-            "2. passphrase   (string, optional) Optional BIP39 passphrase\n"
+            "2. passphrase   (string, optional, default=\"\") Optional BIP39 passphrase\n"
             "3. rescan       (boolean, optional, default=true) Rescan blockchain for transactions\n"
             "\nNote: This will replace the current HD wallet if one exists.\n"
+            "Note: This call can take minutes to complete if rescan is true. During that time, other RPC calls\n"
+            "may report that the imported keys exist but related transactions are still missing, leading to temporarily\n"
+            "incorrect/bogus balances and unspent outputs until rescan completes. Set rescan=false and use\n"
+            "'rescanblockchain' separately if you want to avoid blocking.\n"
             "\nExamples:\n"
             + HelpExampleCli("importmnemonic", "\"word1 word2 ... word12\"")
             + HelpExampleCli("importmnemonic", "\"word1 word2 ... word12\" \"mypassphrase\" false")
@@ -200,6 +204,11 @@ UniValue importmnemonic(const JSONRPCRequest& request)
 
     std::string mnemonic = request.params[0].get_str();
     std::string passphrase = request.params.size() > 1 ? request.params[1].get_str() : "";
+    
+    // Type check the rescan parameter if provided
+    if (request.params.size() > 2) {
+        RPCTypeCheckArgument(request.params[2], UniValue::VBOOL);
+    }
     bool rescan = request.params.size() > 2 ? request.params[2].get_bool() : true;
 
     // Validate mnemonic
@@ -260,14 +269,15 @@ UniValue importmnemonic(const JSONRPCRequest& request)
     
     // Generate initial keypool
     pwallet->TopUpKeyPool();
+    }
     
-    // Rescan if requested
+    // Rescan if requested (outside the lock to avoid timeout)
     if (rescan) {
         WalletRescanReserver reserver(pwallet);
         if (!reserver.reserve()) {
             throw JSONRPCError(RPC_WALLET_ERROR, "Wallet is currently rescanning. Please try again later.");
         }
-        pwallet->ScanForWalletTransactions(chainActive.Genesis(), nullptr, reserver, true);
+        pwallet->RescanFromTime(TIMESTAMP_MIN, reserver, true);
     }
     
     return NullUniValue;
