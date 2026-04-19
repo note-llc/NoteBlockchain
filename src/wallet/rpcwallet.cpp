@@ -199,76 +199,77 @@ UniValue importmnemonic(const JSONRPCRequest& request)
             + HelpExampleRpc("importmnemonic", "\"word1 word2 ... word12\", \"\", true")
         );
 
-    LOCK2(cs_main, pwallet->cs_wallet);
-    EnsureWalletIsUnlocked(pwallet);
+    {
+        LOCK2(cs_main, pwallet->cs_wallet);
+        EnsureWalletIsUnlocked(pwallet);
 
-    std::string mnemonic = request.params[0].get_str();
-    std::string passphrase = request.params.size() > 1 ? request.params[1].get_str() : "";
-    
-    // Type check the rescan parameter if provided
-    if (request.params.size() > 2) {
-        RPCTypeCheckArgument(request.params[2], UniValue::VBOOL);
-    }
-    bool rescan = request.params.size() > 2 ? request.params[2].get_bool() : true;
+        std::string mnemonic = request.params[0].get_str();
+        std::string passphrase = request.params.size() > 1 ? request.params[1].get_str() : "";
+        
+        // Type check the rescan parameter if provided
+        if (request.params.size() > 2) {
+            RPCTypeCheckArgument(request.params[2], UniValue::VBOOL);
+        }
+        bool rescan = request.params.size() > 2 ? request.params[2].get_bool() : true;
 
-    // Validate mnemonic
-    if (!BIP39::ValidateMnemonic(mnemonic)) {
-        throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mnemonic phrase");
-    }
+        // Validate mnemonic
+        if (!BIP39::ValidateMnemonic(mnemonic)) {
+            throw JSONRPCError(RPC_INVALID_PARAMETER, "Invalid mnemonic phrase");
+        }
 
-    // Convert mnemonic to seed
-    std::vector<unsigned char> seed = BIP39::MnemonicToSeed(mnemonic, passphrase);
+        // Convert mnemonic to seed
+        std::vector<unsigned char> seed = BIP39::MnemonicToSeed(mnemonic, passphrase);
+        
+        // Create master key from seed
+        CKey masterKey;
+        CExtKey extMasterKey;
+        extMasterKey.SetMaster(seed.data(), seed.size());
+        masterKey = extMasterKey.key;
+        
+        CPubKey masterPubKey = masterKey.GetPubKey();
+        
+        // Store in wallet
+        CWalletDB walletdb(pwallet->GetDBHandle());
+        
+        // Create new HD chain with BIP44 path
+        CHDChain newHdChain;
+        newHdChain.nVersion = CHDChain::VERSION_HD_MNEMONIC;
+        newHdChain.pathType = CHDChain::DERIVATION_BIP44;
+        newHdChain.hasMnemonic = true;
+        newHdChain.masterKeyID = masterPubKey.GetID();
+        
+        // Store master key
+        CKeyMetadata metadata(GetTime());
+        metadata.hdKeypath = "m";
+        metadata.hdMasterKeyID = masterPubKey.GetID();
+        
+        // Add metadata to wallet's map before adding the key
+        pwallet->mapKeyMetadata[masterPubKey.GetID()] = metadata;
+        
+        if (!pwallet->AddKeyPubKeyWithDB(walletdb, masterKey, masterPubKey)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Failed to add master key");
+        }
+        
+        // Store encrypted mnemonic
+        CMnemonicData mnemonicData;
+        mnemonicData.nCreateTime = GetTime();
+        // TODO: Implement proper encryption when wallet is encrypted
+        mnemonicData.encryptedMnemonic.assign(mnemonic.begin(), mnemonic.end());
+        
+        if (!walletdb.WriteMnemonic(mnemonicData)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Failed to store mnemonic");
+        }
+        
+        // Set HD chain
+        if (!pwallet->SetHDChain(newHdChain, false)) {
+            throw JSONRPCError(RPC_WALLET_ERROR, "Failed to set HD chain");
+        }
+        
+        // Set wallet feature
+        pwallet->SetMinVersion(FEATURE_MNEMONIC, &walletdb, true);
     
-    // Create master key from seed
-    CKey masterKey;
-    CExtKey extMasterKey;
-    extMasterKey.SetMaster(seed.data(), seed.size());
-    masterKey = extMasterKey.key;
-    
-    CPubKey masterPubKey = masterKey.GetPubKey();
-    
-    // Store in wallet
-    CWalletDB walletdb(pwallet->GetDBHandle());
-    
-    // Create new HD chain with BIP44 path
-    CHDChain newHdChain;
-    newHdChain.nVersion = CHDChain::VERSION_HD_MNEMONIC;
-    newHdChain.pathType = CHDChain::DERIVATION_BIP44;
-    newHdChain.hasMnemonic = true;
-    newHdChain.masterKeyID = masterPubKey.GetID();
-    
-    // Store master key
-    CKeyMetadata metadata(GetTime());
-    metadata.hdKeypath = "m";
-    metadata.hdMasterKeyID = masterPubKey.GetID();
-    
-    // Add metadata to wallet's map before adding the key
-    pwallet->mapKeyMetadata[masterPubKey.GetID()] = metadata;
-    
-    if (!pwallet->AddKeyPubKeyWithDB(walletdb, masterKey, masterPubKey)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to add master key");
-    }
-    
-    // Store encrypted mnemonic
-    CMnemonicData mnemonicData;
-    mnemonicData.nCreateTime = GetTime();
-    // TODO: Implement proper encryption when wallet is encrypted
-    mnemonicData.encryptedMnemonic.assign(mnemonic.begin(), mnemonic.end());
-    
-    if (!walletdb.WriteMnemonic(mnemonicData)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to store mnemonic");
-    }
-    
-    // Set HD chain
-    if (!pwallet->SetHDChain(newHdChain, false)) {
-        throw JSONRPCError(RPC_WALLET_ERROR, "Failed to set HD chain");
-    }
-    
-    // Set wallet feature
-    pwallet->SetMinVersion(FEATURE_MNEMONIC, &walletdb, true);
-    
-    // Generate initial keypool
-    pwallet->TopUpKeyPool();
+        // Generate initial keypool
+        pwallet->TopUpKeyPool();
     }
     
     // Rescan if requested (outside the lock to avoid timeout)
