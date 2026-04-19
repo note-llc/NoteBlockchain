@@ -199,18 +199,18 @@ UniValue importmnemonic(const JSONRPCRequest& request)
             + HelpExampleRpc("importmnemonic", "\"word1 word2 ... word12\", \"\", true")
         );
 
+    // Type check the rescan parameter if provided
+    if (request.params.size() > 2) {
+        RPCTypeCheckArgument(request.params[2], UniValue::VBOOL);
+    }
+    bool rescan = request.params.size() > 2 ? request.params[2].get_bool() : true;
+
     {
         LOCK2(cs_main, pwallet->cs_wallet);
         EnsureWalletIsUnlocked(pwallet);
 
         std::string mnemonic = request.params[0].get_str();
         std::string passphrase = request.params.size() > 1 ? request.params[1].get_str() : "";
-        
-        // Type check the rescan parameter if provided
-        if (request.params.size() > 2) {
-            RPCTypeCheckArgument(request.params[2], UniValue::VBOOL);
-        }
-        bool rescan = request.params.size() > 2 ? request.params[2].get_bool() : true;
 
         // Validate mnemonic
         if (!BIP39::ValidateMnemonic(mnemonic)) {
